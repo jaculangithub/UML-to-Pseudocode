@@ -1,0 +1,14 @@
+body {
+  background-color: #f8f9fa;
+}
+
+.diagram-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.diagram-button {
+  padding: 10px 20px;
+  font-size: 16px;
+}
