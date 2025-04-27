@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import { Container, Row, Col, Modal, Button as BootstrapButton } from "react-bootstrap";
 import DiagramElements from "./DiagramElements";
-import EditorField from "./EditorField";
+import EditorField2 from "./EditorField2";
 import MenuBar from "./MenuBar";
+import { nanoid } from 'nanoid';
+import { applyNodeChanges, applyEdgeChanges, addEdge } from '@xyflow/react';
 
 const UMLEditor = ({ diagramType }) => {
-  const [elements, setElements] = useState([]);
-  const [connectors, setConnectors] = useState([]);
+  const [nodes, setNodes] = useState([]);
+  const [edges, setEdges] = useState([]);
   const [selectedElement, setSelectedElement] = useState(null);
   const [showPseudocodeModal, setShowPseudocodeModal] = useState(false);
   const [pseudocode, setPseudocode] = useState("");
@@ -16,95 +18,47 @@ const UMLEditor = ({ diagramType }) => {
   }
 
   const handleAddElement = (element) => {
-    let width, height;
+    const supportedNodes = ["Start Node", "End Node", "Action", "Decision"];
+    if (!supportedNodes.includes(element.type)) return;
 
-    switch (element.type) {
-      case "Class Box":
-        width = 120;
-        height = 80;
-        break;
-      case "Attribute":
-        width = 120;
-        height = 40;
-        break;
-      case "Method":
-        width = 120;
-        height = 40;
-        break;
-      case "Start Node":
-      case "End Node":
-        width = 40;
-        height = 40;
-        break;
-      case "Action":
-        width = 120;
-        height = 60;
-        break;
-      case "Decision":
-        width = 60;
-        height = 60;
-        break;
-      case "Fork Node":
-      case "Join Node":
-        width = 60;
-        height = 10;
-        break;
-      case "Actor":
-        width = 60;
-        height = 100;
-        break;
-      case "Lifeline":
-        width = 2;
-        height = 100;
-        break;
-      case "Message":
-        width = 100;
-        height = 2;
-        break;
-      case "Activation Bar":
-        width = 10;
-        height = 60;
-        break;
-      case "State":
-        width = 120;
-        height = 80;
-        break;
-      case "Initial State":
-      case "Final State":
-        width = 40;
-        height = 40;
-        break;
-      case "Transition":
-      case "Association":
-      case "Inheritance":
-      case "Aggregation":
-      case "Composition":
-        width = 100;
-        height = 2;
-        break;
-      default:
-        width = 100;
-        height = 50;
-    }
+    const id = nanoid();
+    const nodeTypeMap = {
+      "Start Node": "StartNode",
+      "End Node": "EndNode",
+      "Action": "ActionNode",
+      "Decision": "DiamondNode",
+    };
 
-    setElements([
-      ...elements,
-      { ...element, id: Date.now(), x: 50, y: 50, width, height, text: "" , className: "", attributes: "", methods: "", isEditing: false },
-    ]);
+    const dimensions = {
+      "Start Node": { width: 50, height: 50 },
+      "End Node": { width: 35, height: 35 },
+      "Action": { width: 200, height: 70 },
+      "Decision": { width: 100, height: 100 },
+    };
+
+    const newNode = {
+      id,
+      type: nodeTypeMap[element.type],
+      position: { x: Math.random() * 500, y: Math.random() * 500 },
+      data: { label: element.type === "Action" ? "Action" : element.type },
+      ...dimensions[element.type],
+    };
+
+    setNodes((nds) => [...nds, newNode]);
   };
 
   const handleSelectElement = (id) => {
     if (!selectedElement) {
       setSelectedElement(id);
     } else {
-      setConnectors([...connectors, { from: selectedElement, to: id }]);
+      setEdges((eds) => addEdge({ id: nanoid(), source: selectedElement, target: id }, eds));
       setSelectedElement(null);
     }
   };
 
   const generatePseudocode = () => {
-    const actionElements = elements.filter((el) => el.type === "Action");
-    const pseudocodeText = actionElements.map((el) => `- ${el.text}`).join("\n");
+    const actionElements = nodes.filter((el) => el.type === "ActionNode");
+    const pseudocodeText = actionElements.map((el) => `- ${el.data.label}`).join("\n");
     setPseudocode(pseudocodeText);
     setShowPseudocodeModal(true);
   };
@@ -121,16 +75,16 @@ const UMLEditor = ({ diagramType }) => {
           <DiagramElements diagramType={diagramType} onAddElement={handleAddElement} />
         </Col>
         <Col xs={9}>
-          <EditorField
-            elements={elements}
-            setElements={setElements}
-            connectors={connectors}
-            onSelectElement={handleSelectElement}
+          <EditorField2 
+            nodes={nodes} 
+            edges={edges}
+            onNodesChange={(changes) => setNodes((nds) => applyNodeChanges(changes, nds))}
+            onEdgesChange={(changes) => setEdges((eds) => applyEdgeChanges(changes, eds))}
+            onConnect={(connection) => setEdges((eds) => addEdge(connection, eds))}
           />
         </Col>
       </Row>
 
-      {/* Pseudocode Modal */}
       <Modal show={showPseudocodeModal} onHide={handleCloseModal} centered>
         <Modal.Header closeButton>
           <Modal.Title>Generated Pseudocode:</Modal.Title>

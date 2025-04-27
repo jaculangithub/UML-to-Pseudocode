@@ -1,3 +1,5 @@
+//last
+
 import React from "react";
 import { Card, Button } from "react-bootstrap";
 import actionImg from "../uml-elements/Action.png";
@@ -29,6 +31,8 @@ import lostMessageImg from "../uml-elements/Lost Message.png"
 import foundMessageImg from "../uml-elements/Found Message.png"
 import commentImg from "../uml-elements/Comment.png"
 
+
+
 const ELEMENTS = {
   Class: [
     { name: "Class Box", img: classImg },
@@ -41,11 +45,11 @@ const ELEMENTS = {
     { name: "Realization", img: realizationImg }
   ],
   Activity: [
-    { name: "Start Node", img: initialNodeImg },
-    { name: "End Node", img: endNodeImg },
-    { name: "Action", img: actionImg },
-    { name: "Decision", img: decisionNodeImg },
-    { name: "Control Flow", img: dependencyImg },
+    { name: "Start Node", img: initialNodeImg, id: 1 },
+    { name: "End Node", img: endNodeImg, id: 2 },
+    { name: "Action", img: actionImg, id: 3 },
+    { name: "Decision", img: decisionNodeImg, id: 4},
+    { name: "Control Flow", img: dependencyImg},
     { name: "Fork Node", img: forkNodeImg },
     { name: "Join Node", img: joinNodeImg },
     { name: "Swimlane", img:  swimLaneImg },
@@ -79,6 +83,14 @@ const ELEMENTS = {
 };
 
 const DiagramElements = ({ diagramType, onAddElement }) => {
+  const supportedElements = ["Start Node", "End Node", "Action", "Decision"];
+
+  const handleElementClick = (element) => {
+    if (supportedElements.includes(element.name)) {
+      onAddElement({ type: element.name });
+    }
+  };
+
   return (
     <Card className="p-3" style={{ backgroundColor: "#bdbcbc" }}>
       <h5>{diagramType} Diagram Notations</h5>
@@ -89,7 +101,7 @@ const DiagramElements = ({ diagramType, onAddElement }) => {
             variant="light"
             className="p-2 d-flex flex-column align-items-center"
             style={{ border: "1px solid #ccc", borderRadius: "8px", width: "120px" }}
-            onClick={() => onAddElement({ type: name })}
+            onClick={() => handleElementClick({ name })}
           >
             <img src={img} alt={name} style={{ width: "50px", height: "50px" }} />
             <small>{name}</small>
@@ -101,3 +113,4 @@ const DiagramElements = ({ diagramType, onAddElement }) => {
 };
 
 export default DiagramElements;
+//end
